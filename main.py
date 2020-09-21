@@ -6,6 +6,7 @@ import sqlite3
 ## window with full scall ##
 
 root = Tk()
+root.title("Company calculations with Tkinter")
 root.state('zoomed')
 root.bind("<F12>", lambda event: root.attributes("-fullscreen", True))
 root.bind("<Escape>", lambda event: root.attributes("-fullscreen", False))
@@ -25,6 +26,7 @@ class dataBase:
 dataBase = dataBase("items.db")
 conn = dataBase.conn
 cur = dataBase.cur
+
 
 
 root.mainloop()
