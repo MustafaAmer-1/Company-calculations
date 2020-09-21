@@ -55,11 +55,6 @@ items_tree.heading("ID", text="ID", anchor=W)
 items_tree.heading("Name", text="Name", anchor=W)
 items_tree.heading("Price", text="Price", anchor=W)
 
-## TreeView Data ##
-cur.execute("SELECT * FROM items")
-for id, name, price in cur.fetchall():
-    items_tree.insert(parent='', index='end', iid=id, values=(id, name, price))
-
 ## style the treeView ##
 style = ttk.Style(root)
 style.theme_use("clam")
@@ -67,6 +62,17 @@ style.configure("Treeview",
              rowheight=70)
 
 items_tree.configure(style="Treeview")
+
+items_tree.tag_configure('evenRow', background='lightblue')
+items_tree.tag_configure('oddRow', background='white')
+
+## TreeView Data ##
+cur.execute("SELECT * FROM items")
+for id, name, price in cur.fetchall():
+    if id % 2 == 0:
+        items_tree.insert(parent='', index='end', iid=id, values=(id, name, price), tags=('evenRow', ))
+    else:
+        items_tree.insert(parent='', index='end', iid=id, values=(id, name, price), tags=('oddRow', ))
 
 ## Pack the treeview to the window ##
 items_tree.pack()
