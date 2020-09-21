@@ -5,7 +5,6 @@ from tkinter import ttk
 import sqlite3
 
 ## window with full scall ##
-
 root = Tk()
 root.title("Company calculations with Tkinter")
 root.state('zoomed')
@@ -13,7 +12,6 @@ root.bind("<F12>", lambda event: root.attributes("-fullscreen", True))
 root.bind("<Escape>", lambda event: root.attributes("-fullscreen", False))
 
 ## connect to the data base ##
-
 class dataBase:
     def __init__(self, fileName):
         try:
@@ -29,7 +27,6 @@ conn = dataBase.conn
 cur = dataBase.cur
 
 ## create the items table ##
-
 cur.execute('''CREATE TABLE IF NOT EXISTS "items" (
 	"id"	INTEGER NOT NULL UNIQUE,
 	"name"	TEXT,
@@ -37,8 +34,22 @@ cur.execute('''CREATE TABLE IF NOT EXISTS "items" (
 	PRIMARY KEY("id" AUTOINCREMENT)
 );''')
 
-## set items treeview ##
-items_tree = ttk.Treeview(root)
+## Create treeView Frame ##
+tree_frame = Frame(root)
+tree_frame.pack(pady=20)
+
+## Create Treeview ScrollBar ##
+tree_scroll = Scrollbar(tree_frame)
+tree_scroll.pack(side=RIGHT, fill=Y)
+
+## Create items treeview ##
+items_tree = ttk.Treeview(tree_frame, yscrollcommand=tree_scroll.set)
+
+## Pack the treeview to the window ##
+items_tree.pack(fill=X)
+
+## Configure ScrollBar ##
+tree_scroll.config(command=items_tree.yview)
 
 ## define the columns ##
 items_tree['columns'] = ("ID", "Name", "Price")
@@ -63,6 +74,7 @@ style.configure("Treeview",
 
 items_tree.configure(style="Treeview")
 
+## Create striped row with tags ##
 items_tree.tag_configure('evenRow', background='lightblue')
 items_tree.tag_configure('oddRow', background='white')
 
@@ -73,8 +85,5 @@ for id, name, price in cur.fetchall():
         items_tree.insert(parent='', index='end', iid=id, values=(id, name, price), tags=('evenRow', ))
     else:
         items_tree.insert(parent='', index='end', iid=id, values=(id, name, price), tags=('oddRow', ))
-
-## Pack the treeview to the window ##
-items_tree.pack()
 
 root.mainloop()
