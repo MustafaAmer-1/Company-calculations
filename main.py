@@ -44,19 +44,21 @@ items_tree = ttk.Treeview(root)
 items_tree['columns'] = ("ID", "Name", "Price")
 
 ## Format the columns ##
-items_tree.column("#0", width=0, minwidth=0) # Phantom column
-items_tree.column("ID", anchor=W, width=80)
-items_tree.column("Name", anchor=W, width=120)
-items_tree.column("Price", anchor=E, width=80)
+items_tree.column("#0", width=0, stretch=NO) # Phantom column
+items_tree.column("ID", anchor=W, width=400)
+items_tree.column("Name", anchor=W, width=1200)
+items_tree.column("Price", anchor=W, width=800)
 
 ## Create Headings ##
 items_tree.heading("#0", text="", anchor=W)
-items_tree.heading("ID", text="Item ID", anchor=W)
-items_tree.heading("Name", text="Item Name", anchor=W)
-items_tree.heading("Price", text="Item Price", anchor=E)
+items_tree.heading("ID", text="ID", anchor=W)
+items_tree.heading("Name", text="Name", anchor=W)
+items_tree.heading("Price", text="Price", anchor=W)
 
 ## TreeView Data ##
-items_tree.insert(parent='', index='end', iid=0, text="Parent", values=("First", 1, "Apple"))
+cur.execute("SELECT * FROM items")
+for id, name, price in cur.fetchall():
+    items_tree.insert(parent='', index='end', iid=id, values=(id, name, price))
 
 ## Pack the treeview to the window ##
 items_tree.pack()
