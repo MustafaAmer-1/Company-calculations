@@ -34,56 +34,94 @@ cur.execute('''CREATE TABLE IF NOT EXISTS "items" (
 	PRIMARY KEY("id" AUTOINCREMENT)
 );''')
 
-## Create treeView Frame ##
+## Create items treeView Frame ##
 tree_frame = Frame(root)
-tree_frame.pack(pady=20)
+tree_frame.pack(pady=20, fill=X, side=TOP)
 
-## Create Treeview ScrollBar ##
+## Create selected items TreeView Frame ##
+selected_frame = Frame(root)
+selected_frame.pack(pady=20, fill=X, side=BOTTOM)
+
+## Create items Treeview ScrollBar ##
 tree_scroll = Scrollbar(tree_frame)
 tree_scroll.pack(side=RIGHT, fill=Y)
+
+## Create selected items Treeview ScrollBar ##
+selected_scroll = Scrollbar(selected_frame)
+selected_scroll.pack(side=RIGHT, fill=Y)
 
 ## Create items treeview ##
 items_tree = ttk.Treeview(tree_frame, yscrollcommand=tree_scroll.set)
 
-## Pack the treeview to the window ##
+## Create selected items treeview ##
+selected_tree = ttk.Treeview(selected_frame, yscrollcommand=selected_scroll.set)
+
+## Pack the items treeview to the window ##
 items_tree.pack(fill=X)
+
+## Pack the selected items treeview to the window ##
+selected_tree.pack(fill=X)
 
 ## Configure ScrollBar ##
 tree_scroll.config(command=items_tree.yview)
+selected_scroll.config(command=selected_tree.yview)
 
 ## define the columns ##
 items_tree['columns'] = ("ID", "Name", "Price")
+selected_tree['columns'] = ("Name", "Price", "Amount", "Total")
 
-## Format the columns ##
+## Format the columns for items ##
 items_tree.column("#0", width=0, stretch=NO) # Phantom column
-items_tree.column("ID", anchor=W, width=400)
-items_tree.column("Name", anchor=W, width=1200)
-items_tree.column("Price", anchor=W, width=800)
+items_tree.column("ID", anchor=W, width=40)
+items_tree.column("Name", anchor=W, width=120)
+items_tree.column("Price", anchor=W, width=80)
 
-## Create Headings ##
+## Format the columns for selected items##
+selected_tree.column("#0", width=0, stretch=NO) # Phantom column
+selected_tree.column("Name", anchor=W, width=120)
+selected_tree.column("Price", anchor=W, width=40)
+selected_tree.column("Amount", anchor=W, width=80)
+selected_tree.column("Total", anchor=W, width=80)
+
+## Create Headings for items tree view ##
 items_tree.heading("#0", text="", anchor=W)
 items_tree.heading("ID", text="ID", anchor=W)
 items_tree.heading("Name", text="Name", anchor=W)
 items_tree.heading("Price", text="Price", anchor=W)
 
+## Create Headings for selected tree view ##
+selected_tree.heading("#0", text="", anchor=W)
+selected_tree.heading("Name", text="Name", anchor=W)
+selected_tree.heading("Price", text="Price", anchor=W)
+selected_tree.heading("Amount", text="Amount", anchor=W)
+selected_tree.heading("Total", text="Total", anchor=W)
+
 ## style the treeView ##
 style = ttk.Style(root)
 style.theme_use("clam")
 style.configure("Treeview",
-             rowheight=70)
+             rowheight=50)
 
 items_tree.configure(style="Treeview")
 
-## Create striped row with tags ##
+selected_tree.configure(style="Treeview")
+
+## Create striped row with tags items##
 items_tree.tag_configure('evenRow', background='lightblue')
 items_tree.tag_configure('oddRow', background='white')
+
+## Create striped row with tags selected##
+selected_tree.tag_configure('evenRow', background='#FFF851')
+selected_tree.tag_configure('oddRow', background='white')
 
 ## TreeView Data ##
 cur.execute("SELECT * FROM items")
 for id, name, price in cur.fetchall():
     if id % 2 == 0:
         items_tree.insert(parent='', index='end', iid=id, values=(id, name, price), tags=('evenRow', ))
+        selected_tree.insert(parent='', index='end', iid=id, values=(name, price ), tags=('evenRow', ))
     else:
         items_tree.insert(parent='', index='end', iid=id, values=(id, name, price), tags=('oddRow', ))
+        selected_tree.insert(parent='', index='end', iid=id, values=(name, price), tags=('oddRow', ))
 
 root.mainloop()
