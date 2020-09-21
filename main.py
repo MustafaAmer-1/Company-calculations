@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import messagebox
 from tkinter import filedialog
+from tkinter import ttk
 import sqlite3
 
 ## window with full scall ##
@@ -36,5 +37,28 @@ cur.execute('''CREATE TABLE IF NOT EXISTS "items" (
 	PRIMARY KEY("id" AUTOINCREMENT)
 );''')
 
+## set items treeview ##
+items_tree = ttk.Treeview(root)
+
+## define the columns ##
+items_tree['columns'] = ("ID", "Name", "Price")
+
+## Format the columns ##
+items_tree.column("#0", width=0, minwidth=0) # Phantom column
+items_tree.column("ID", anchor=W, width=80)
+items_tree.column("Name", anchor=W, width=120)
+items_tree.column("Price", anchor=E, width=80)
+
+## Create Headings ##
+items_tree.heading("#0", text="", anchor=W)
+items_tree.heading("ID", text="Item ID", anchor=W)
+items_tree.heading("Name", text="Item Name", anchor=W)
+items_tree.heading("Price", text="Item Price", anchor=E)
+
+## TreeView Data ##
+items_tree.insert(parent='', index='end', iid=0, text="Parent", values=("First", 1, "Apple"))
+
+## Pack the treeview to the window ##
+items_tree.pack()
 
 root.mainloop()
