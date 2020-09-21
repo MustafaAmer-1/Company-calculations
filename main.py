@@ -27,6 +27,14 @@ dataBase = dataBase("items.db")
 conn = dataBase.conn
 cur = dataBase.cur
 
+## create the items table ##
+
+cur.execute('''CREATE TABLE IF NOT EXISTS "items" (
+	"id"	INTEGER NOT NULL UNIQUE,
+	"name"	TEXT,
+	"price"	REAL,
+	PRIMARY KEY("id" AUTOINCREMENT)
+);''')
 
 
 root.mainloop()
