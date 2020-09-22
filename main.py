@@ -14,7 +14,14 @@ root.bind("<Escape>", lambda event: root.attributes("-fullscreen", False))
 ## Calculate the size of the screen ##
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
-#print(screen_width, screen_height)
+
+## Create Main Menu ##
+main_menu = Menu(root)
+root.config(menu=main_menu)
+
+## Create items menu ##
+item_menu = Menu(main_menu, tearoff=0)
+main_menu.add_cascade(menu=item_menu, label="Items")
 
 ## connect to the data base ##
 class dataBase:
@@ -40,11 +47,11 @@ cur.execute('''CREATE TABLE IF NOT EXISTS "items" (
 );''')
 
 ## Create items treeView Frame ##
-tree_frame = Frame(root, bg="blue")
+tree_frame = Frame(root)
 tree_frame.pack(side=TOP, expand = True, fill = BOTH)
 
 ## Create selected items TreeView Frame ##
-selected_frame = Frame(root, bg="red")
+selected_frame = Frame(root)
 selected_frame.pack(side=BOTTOM, expand = True, fill = BOTH)
 
 ## Create items Treeview ScrollBar ##
@@ -118,7 +125,7 @@ items_tree.tag_configure('oddRow', background='white')
 ## Create striped row with tags selected##
 selected_tree.tag_configure('selectedRow', background='#FFF851')
 
-## TreeView Data ##
+## items TreeView Data ##
 cur.execute("SELECT * FROM items")
 for id, name, price in cur.fetchall():
     price = ('%f' % price).rstrip('0').rstrip('.')
@@ -126,6 +133,22 @@ for id, name, price in cur.fetchall():
         items_tree.insert(parent='', index='end', iid=int(id), values=(id, name, price), tags=('evenRow', ))
     else:
         items_tree.insert(parent='', index='end', iid=int(id), values=(id, name, price), tags=('oddRow', ))
+
+def open_add_item_window():
+    add_item("test", 15)
+
+## Add item to the DataBase and items TreeView ##
+def add_item(name, price):
+    cur.execute("INSERT INTO items (name, price) VALUES (?, ?)", (name, price))
+    last_id = cur.lastrowid
+    if last_id % 2 == 0:
+        items_tree.insert(parent='', index='end', iid=int(last_id), values=(last_id, name, price), tags=('evenRow', ))
+    else:
+        items_tree.insert(parent='', index='end', iid=int(last_id), values=(last_id, name, price), tags=('oddRow', ))
+    conn.commit()
+
+## Create add item command to Items Menu ##
+item_menu.add_command(label="Add Item...", command=open_add_item_window)
 
 ## add selected item to the selected treeView ##
 def add_selected_item(event):
@@ -203,5 +226,9 @@ try:
     selected_tree.bind("<Delete>", delete_selected_item)
 except:
     pass
+
+## Add Quit command to items menu ##
+item_menu.add_separator()
+item_menu.add_command(label="Quit", command=root.quit)
 
 root.mainloop()
