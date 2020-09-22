@@ -251,6 +251,13 @@ except:
 
 ## Add Quit command to items menu ##
 item_menu.add_separator()
-item_menu.add_command(label="Quit", command=root.quit)
+def end_program():
+    answer = messagebox.askyesno("Quit Program", "Do you want to end the program?")
+    if answer:
+        root.quit()
+item_menu.add_command(label="Quit", command=end_program)
+
+## Handel root window close and create Messagebox ##
+root.protocol("WM_DELETE_WINDOW", end_program)
 
 root.mainloop()
