@@ -135,7 +135,27 @@ for id, name, price in cur.fetchall():
         items_tree.insert(parent='', index='end', iid=int(id), values=(id, name, price), tags=('oddRow', ))
 
 def open_add_item_window():
-    add_item("test", 15)
+    global add_item_window
+    add_item_window = Toplevel(root)
+    
+    Label(add_item_window, text="Item Name", padx=10, pady=10).grid(row=0, column=0, sticky=E)
+    
+    name_entry = Entry(add_item_window, borderwidth=5)
+    name_entry.grid(row=0, column=1)
+    
+    Label(add_item_window, text="Item Price", padx=10, pady=10).grid(row=1, column=0, sticky=E)
+    
+    price_entry = Entry(add_item_window, borderwidth=5)
+    price_entry.grid(row=1, column=1)
+
+    add_button = Button(add_item_window, text="ADD", padx=10, pady=10
+                            , borderwidth=5, bg="#70E852", command=lambda : add_item(name_entry.get(), price_entry.get()))
+    add_button.grid(row=2, columnspan=2, sticky="nsew")
+
+    name_entry.focus_set()
+
+    add_item_window.bind("<Return>", lambda event: add_button.invoke())
+    return
 
 ## Add item to the DataBase and items TreeView ##
 def add_item(name, price):
@@ -146,6 +166,8 @@ def add_item(name, price):
     else:
         items_tree.insert(parent='', index='end', iid=int(last_id), values=(last_id, name, price), tags=('oddRow', ))
     conn.commit()
+    add_item_window.destroy()
+    return
 
 ## Create add item command to Items Menu ##
 item_menu.add_command(label="Add Item...", command=open_add_item_window)
@@ -229,6 +251,13 @@ except:
 
 ## Add Quit command to items menu ##
 item_menu.add_separator()
-item_menu.add_command(label="Quit", command=root.quit)
+def end_program():
+    answer = messagebox.askyesno("Quit Program", "Do you want to end the program?")
+    if answer:
+        root.quit()
+item_menu.add_command(label="Quit", command=end_program)
+
+## Handel root window close and create Messagebox ##
+root.protocol("WM_DELETE_WINDOW", end_program)
 
 root.mainloop()
