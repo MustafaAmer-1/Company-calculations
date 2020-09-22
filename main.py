@@ -11,6 +11,11 @@ root.state('zoomed')
 root.bind("<F12>", lambda event: root.attributes("-fullscreen", True))
 root.bind("<Escape>", lambda event: root.attributes("-fullscreen", False))
 
+## Calculate the size of the screen ##
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+#print(screen_width, screen_height)
+
 ## connect to the data base ##
 class dataBase:
     def __init__(self, fileName):
@@ -35,12 +40,12 @@ cur.execute('''CREATE TABLE IF NOT EXISTS "items" (
 );''')
 
 ## Create items treeView Frame ##
-tree_frame = Frame(root)
-tree_frame.pack(pady=20, fill=X, side=TOP)
+tree_frame = Frame(root, bg="blue")
+tree_frame.pack(side=TOP, expand = True, fill = BOTH)
 
 ## Create selected items TreeView Frame ##
-selected_frame = Frame(root)
-selected_frame.pack(pady=20, fill=X, side=BOTTOM)
+selected_frame = Frame(root, bg="red")
+selected_frame.pack(side=BOTTOM, expand = True, fill = BOTH)
 
 ## Create items Treeview ScrollBar ##
 tree_scroll = Scrollbar(tree_frame)
@@ -111,17 +116,23 @@ items_tree.tag_configure('evenRow', background='lightblue')
 items_tree.tag_configure('oddRow', background='white')
 
 ## Create striped row with tags selected##
-selected_tree.tag_configure('evenRow', background='#FFF851')
-selected_tree.tag_configure('oddRow', background='white')
+selected_tree.tag_configure('selectedRow', background='#FFF851')
 
 ## TreeView Data ##
 cur.execute("SELECT * FROM items")
 for id, name, price in cur.fetchall():
     if id % 2 == 0:
-        items_tree.insert(parent='', index='end', iid=id, values=(id, name, price), tags=('evenRow', ))
-        selected_tree.insert(parent='', index='end', iid=id, values=(name, price ), tags=('evenRow', ))
+        items_tree.insert(parent='', index='end', iid=int(id), values=(id, name, price), tags=('evenRow', ))
     else:
-        items_tree.insert(parent='', index='end', iid=id, values=(id, name, price), tags=('oddRow', ))
-        selected_tree.insert(parent='', index='end', iid=id, values=(name, price), tags=('oddRow', ))
+        items_tree.insert(parent='', index='end', iid=int(id), values=(id, name, price), tags=('oddRow', ))
+
+## add selected item to the selected treeView ##
+def add_selected_item(event):
+    item_num = items_tree.focus()
+    values = items_tree.item(item_num, "values")
+    selected_tree.insert(parent='', index='end', iid=int(values[0]), values=(values[1], values[2]), tags=('selectedRow', ))
+    
+## Bind Double click event to items tree view ##
+items_tree.bind("<Double-1>", add_selected_item)
 
 root.mainloop()
