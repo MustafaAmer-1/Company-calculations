@@ -132,7 +132,47 @@ def add_selected_item(event):
     values = items_tree.item(item_num, "values")
     selected_tree.insert(parent='', index='end', iid=int(values[0]), values=(values[1], values[2]), tags=('selectedRow', ))
     
-## Bind Double click event to items tree view ##
+## edit the amount of selected item ##
+def edit_the_amount(event):
+
+    ## close the view and update the selected item with new amount ##
+    def close_view(event):
+        try:
+            amount = int(e.get())
+            selected_tree.item(selected_num, values=(selected_name, selected_price, amount, amount*selected_price))
+        except:
+            messagebox.showerror("Non Falid Amount", "Enter Integer Number for the Amount!")
+        amount_view.destroy()
+    
+    ## open amount view and bind enter event to close the view ##
+    def open_amount_view(num ,name, price):
+        global selected_name
+        selected_name = name
+        global selected_price
+        selected_price = price
+        global selected_num
+        selected_num = num
+
+        global amount_view
+        amount_view = Toplevel(selected_frame)
+        amount_view.title("Amount of " + selected_name)
+        Label(amount_view, text="Amount of " + selected_name).grid(padx=10, pady=20, row=0, column=0)
+        global e
+        e = Entry(amount_view)
+        e.focus_set()
+        e.grid(row=0, column=1, pady=20, padx=10)
+        amount_view.bind('<Return>', close_view)
+
+    selected_num = selected_tree.focus()
+    current_values = selected_tree.item(selected_num, 'values')
+    price = float(current_values[1])
+    name = current_values[0]
+    open_amount_view(selected_num, name, price)
+
+## Bind Double click event to items tree view to insert items to selected ##
 items_tree.bind("<Double-1>", add_selected_item)
+
+## Bind Double click event to selected items to edit the Amount ##
+selected_tree.bind("<Double-1>", edit_the_amount)
 
 root.mainloop()
