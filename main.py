@@ -259,5 +259,14 @@ item_menu.add_command(label="Quit", command=end_program)
 
 ## Handel root window close and create Messagebox ##
 root.protocol("WM_DELETE_WINDOW", end_program)
+## fast Quit the program with Ctrl-Q without asking ##
+root.bind("<Control-Key-q>", lambda event: root.quit())
+
+## Open pre prented window with final totals ##
+def open_prePrinted_window():
+    prePrinted_window = Toplevel(root)
+
+## Bind Ctrl-P to open pre-print window ##
+root.bind("<Control-Key-p>", lambda event: open_prePrinted_window())
 
 root.mainloop()
