@@ -77,8 +77,8 @@ selected_tree['columns'] = ("Name", "Price", "Amount", "Total")
 
 ## Format the columns for items ##
 items_tree.column("#0", width=0, stretch=NO) # Phantom column
-items_tree.column("ID", anchor=W, width=40)
-items_tree.column("Name", anchor=W, width=120)
+items_tree.column("ID", anchor=W, width=10)
+items_tree.column("Name", anchor=W, width=1200)
 items_tree.column("Price", anchor=W, width=80)
 
 ## Format the columns for selected items##
@@ -121,6 +121,7 @@ selected_tree.tag_configure('selectedRow', background='#FFF851')
 ## TreeView Data ##
 cur.execute("SELECT * FROM items")
 for id, name, price in cur.fetchall():
+    price = ('%f' % price).rstrip('0').rstrip('.')
     if id % 2 == 0:
         items_tree.insert(parent='', index='end', iid=int(id), values=(id, name, price), tags=('evenRow', ))
     else:
@@ -130,8 +131,11 @@ for id, name, price in cur.fetchall():
 def add_selected_item(event):
     item_num = items_tree.focus()
     values = items_tree.item(item_num, "values")
-    selected_tree.insert(parent='', index='end', iid=int(values[0]), values=(values[1], values[2]), tags=('selectedRow', ))
-    
+    try:
+        selected_tree.insert(parent='', index='end', iid=int(values[0]), values=(values[1], values[2]), tags=('selectedRow', ))
+    except:
+        pass
+
 ## edit the amount of selected item ##
 def edit_the_amount(event):
 
@@ -139,10 +143,13 @@ def edit_the_amount(event):
     def close_view(event):
         try:
             amount = int(e.get())
-            selected_tree.item(selected_num, values=(selected_name, selected_price, amount, amount*selected_price))
+            total = amount*selected_price
+            total = ('%f' % total).rstrip('0').rstrip('.')
+            selected_tree.item(selected_num, values=(selected_name, selected_price, amount, total))
+            amount_view.destroy()
         except:
-            messagebox.showerror("Non Falid Amount", "Enter Integer Number for the Amount!")
-        amount_view.destroy()
+            messagebox.showwarning("Non-Falid Amount", "Enter Integer Number for the Amount!")
+            e.focus_set()
     
     ## open amount view and bind enter event to close the view ##
     def open_amount_view(num ,name, price):
@@ -169,10 +176,32 @@ def edit_the_amount(event):
     name = current_values[0]
     open_amount_view(selected_num, name, price)
 
+## delete the selected item from the treeView ##
+def delete_selected_item(event):
+    try:
+        selected_tree.delete(selected_tree.focus())
+        next_selection = selected_tree.get_children()[0]
+        selected_tree.focus(next_selection)
+        selected_tree.selection_set(next_selection)
+    except:
+        pass
+
 ## Bind Double click event to items tree view to insert items to selected ##
 items_tree.bind("<Double-1>", add_selected_item)
 
 ## Bind Double click event to selected items to edit the Amount ##
 selected_tree.bind("<Double-1>", edit_the_amount)
+
+## Bind enter to edit the selected item amount ##
+try:
+    selected_tree.bind("<Return>", edit_the_amount)
+except:
+    pass
+
+## Bind delete key event to delete the selected item ##
+try:
+    selected_tree.bind("<Delete>", delete_selected_item)
+except:
+    pass
 
 root.mainloop()
