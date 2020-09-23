@@ -4,6 +4,18 @@ from tkinter import filedialog
 from tkinter import ttk
 import sqlite3
 
+class my_tree(ttk.Treeview):
+	def Make_heading_columns(self, *args):
+		self.column("#0", width=0, stretch=NO)
+		self.heading("#0", text="", anchor=W)
+
+		for ar in args:
+			name = ar.split()[0]
+			width=int(ar.split()[1])
+
+			self.column(name, width=width, anchor=W)
+			self.heading(name, text=name, anchor=W)
+
 ## window with full scall ##
 root = Tk()
 root.title("Company calculations with Tkinter")
@@ -63,10 +75,10 @@ selected_scroll = Scrollbar(selected_frame)
 selected_scroll.pack(side=RIGHT, fill=Y)
 
 ## Create items treeview ##
-items_tree = ttk.Treeview(tree_frame, yscrollcommand=tree_scroll.set)
+items_tree = my_tree(tree_frame, yscrollcommand=tree_scroll.set)
 
 ## Create selected items treeview ##
-selected_tree = ttk.Treeview(selected_frame, yscrollcommand=selected_scroll.set)
+selected_tree = my_tree(selected_frame, yscrollcommand=selected_scroll.set)
 
 ## Pack the items treeview to the window ##
 items_tree.pack(fill=X)
@@ -82,31 +94,9 @@ selected_scroll.config(command=selected_tree.yview)
 items_tree['columns'] = ("ID", "Name", "Price")
 selected_tree['columns'] = ("Name", "Price", "Amount", "Total")
 
-## Format the columns for items ##
-items_tree.column("#0", width=0, stretch=NO) # Phantom column
-items_tree.column("ID", anchor=W, width=10)
-items_tree.column("Name", anchor=W, width=1200)
-items_tree.column("Price", anchor=W, width=80)
-
-## Format the columns for selected items##
-selected_tree.column("#0", width=0, stretch=NO) # Phantom column
-selected_tree.column("Name", anchor=W, width=120)
-selected_tree.column("Price", anchor=W, width=40)
-selected_tree.column("Amount", anchor=W, width=80)
-selected_tree.column("Total", anchor=W, width=80)
-
-## Create Headings for items tree view ##
-items_tree.heading("#0", text="", anchor=W)
-items_tree.heading("ID", text="ID", anchor=W)
-items_tree.heading("Name", text="Name", anchor=W)
-items_tree.heading("Price", text="Price", anchor=W)
-
-## Create Headings for selected tree view ##
-selected_tree.heading("#0", text="", anchor=W)
-selected_tree.heading("Name", text="Name", anchor=W)
-selected_tree.heading("Price", text="Price", anchor=W)
-selected_tree.heading("Amount", text="Amount", anchor=W)
-selected_tree.heading("Total", text="Total", anchor=W)
+## Create Column and Headings ##
+items_tree.Make_heading_columns("ID 10", "Name 1200", "Price 80")
+selected_tree.Make_heading_columns("Name 120", "Price 40", "Amount 80", "Total 80")
 
 ## style the treeView ##
 style = ttk.Style(root)
@@ -258,7 +248,7 @@ def end_program():
 item_menu.add_command(label="Quit", command=end_program)
 
 ## Handel root window close and create Messagebox ##
-root.protocol("WM_DELETE_WINDOW", end_program)
+#root.protocol("WM_DELETE_WINDOW", end_program)
 ## fast Quit the program with Ctrl-Q without asking ##
 root.bind("<Control-Key-q>", lambda event: root.quit())
 
