@@ -8,7 +8,7 @@ class my_tree(ttk.Treeview):
     tree_frame = None
     def __init__(self, master, **kwargs):
         self.tree_frame = Frame(master)
-        self.tree_frame.pack(side=TOP, expand = True, fill = BOTH)
+        self.tree_frame.pack(side=TOP, fill = BOTH)
 
         self.tree_scroll = Scrollbar(self.tree_frame)
         self.tree_scroll.pack(side=RIGHT, fill=Y)
@@ -159,7 +159,7 @@ def add_selected_item(event):
     item_num = items_tree.focus()
     values = items_tree.item(item_num, "values")
     try:
-        selected_tree.insert(parent='', index='end', iid=int(values[0]), values=(values[1], values[2]), tags=('selectedRow', ))
+        selected_tree.insert(parent='', index='end', iid=int(values[0]), values=(values[1], values[2], 1, values[2]), tags=('selectedRow', ))
     except:
         pass
 
@@ -232,17 +232,19 @@ except:
     pass
 
 ## Add Quit command to items menu ##
-item_menu.add_separator()
 def end_program():
     answer = messagebox.askyesno("Quit Program", "Do you want to end the program?")
     if answer:
         root.quit()
-item_menu.add_command(label="Quit", command=end_program)
 
 ## Handel root window close and create Messagebox ##
 #root.protocol("WM_DELETE_WINDOW", end_program)
 ## fast Quit the program with Ctrl-Q without asking ##
 root.bind("<Control-Key-q>", lambda event: root.quit())
+
+## print the bill ##
+def print_bill(window):
+    window.destroy()
 
 ## Open pre prented window with final totals ##
 def open_prePrinted_window():
@@ -258,12 +260,48 @@ def open_prePrinted_window():
     prePrinted_treeView.tag_configure('prePrinted', background='#FE9E76')
 
     ## Add Date From seleted treeView ##
+    total = 0
     for child in selected_tree.get_children():
         values = selected_tree.item(child, 'values')
         prePrinted_treeView.insert(parent='', index='end', iid=child, values=values, tags=('prePrinted', ))
+        total += float(values[-1])
+    total = ('%f' % total).rstrip('0').rstrip('.')
+    
+    total_frame = Frame(prePrinted_window, bg="#B9789F")
+    total_frame.pack(fill=BOTH, expand=True)
+    Label(total_frame, text=" Total: ", font=("Helvetica", 13), bg="#B9789F").pack(side=LEFT)
+    #.place(x=60, y=35, anchor="center")
+    Label(total_frame, text=total, font=("Helvetica", 13), bg="#B9789F").pack(side=LEFT)
+    #.place(x=120, y=35, anchor="center")
 
+    Label(total_frame, text="  ", font=("Helvetica", 13), bg="#B9789F").pack(side=RIGHT)
+    
+    final_total_entry = Entry(total_frame, font=("Helvetica", 13), width=10, borderwidth=2)
+    final_total_entry.insert(0, total)
+    final_total_entry.pack(side=RIGHT)
+    final_total_entry.focus_set()
+    final_total_entry.selection_range(0, END)
+
+    Label(total_frame, text="After Discount: ", font=("Helvetica", 13), bg="#B9789F").pack(side=RIGHT)
+
+    button_frame = Frame(prePrinted_window, bg="#B9789F")
+    button_frame.pack(fill=BOTH, expand=True)
+
+    submit_button = Button(button_frame, text="SUBMIT!", command=lambda: print_bill(prePrinted_window), padx=50)
+    submit_button.pack()
+
+    prePrinted_window.bind("<Return>", lambda event: submit_button.invoke())
+
+
+## Create print bill command to Items menue ##
+item_menu.add_command(label="Print Bill", command=open_prePrinted_window)
 
 ## Bind Ctrl-P to open pre-print window ##
 root.bind("<Control-Key-p>", lambda event: open_prePrinted_window())
+
+## Create Quit command to items menu ##
+item_menu.add_separator()
+item_menu.add_command(label="Quit", command=end_program)
+
 
 root.mainloop()
