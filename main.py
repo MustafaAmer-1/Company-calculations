@@ -5,28 +5,28 @@ from tkinter import ttk
 import sqlite3
 
 class my_tree(ttk.Treeview):
-	tree_frame = None
-	def __init__(self, master, **kwargs):
-		self.tree_frame = Frame(master)
-		self.tree_frame.pack(side=TOP, expand = True, fill = BOTH)
+    tree_frame = None
+    def __init__(self, master, **kwargs):
+        self.tree_frame = Frame(master)
+        self.tree_frame.pack(side=TOP, expand = True, fill = BOTH)
 
-		self.tree_scroll = Scrollbar(self.tree_frame)
-		self.tree_scroll.pack(side=RIGHT, fill=Y)
+        self.tree_scroll = Scrollbar(self.tree_frame)
+        self.tree_scroll.pack(side=RIGHT, fill=Y)
 
-		super(my_tree, self).__init__(self.tree_frame,
-					yscrollcommand=self.tree_scroll.set , **kwargs)
+        super(my_tree, self).__init__(self.tree_frame,
+                    yscrollcommand=self.tree_scroll.set , **kwargs)
 
-		self.tree_scroll.config(command=self.yview)
+        self.tree_scroll.config(command=self.yview)
 
-	def Make_heading_columns(self, *args):
-		self.column("#0", width=0, stretch=NO)
-		self.heading("#0", text="", anchor=W)
+    def Make_heading_columns(self, *args):
+        self.column("#0", width=0, stretch=NO)
+        self.heading("#0", text="", anchor=W)
 
-		for ar in args:
-			name = ar.split()[0]
-			width=int(ar.split()[1])
-			self.column(name, width=width, anchor=W)
-			self.heading(name, text=name, anchor=W)
+        for ar in args:
+            name = ar.split()[0]
+            width=int(ar.split()[1])
+            self.column(name, width=width, anchor=W)
+            self.heading(name, text=name, anchor=W)
 
 ## window with full scall ##
 root = Tk()
@@ -64,10 +64,10 @@ cur = dataBase.cur
 
 ## create the items table ##
 cur.execute('''CREATE TABLE IF NOT EXISTS "items" (
-	"id"	INTEGER NOT NULL UNIQUE,
-	"name"	TEXT,
-	"price"	REAL,
-	PRIMARY KEY("id" AUTOINCREMENT)
+    "id"	INTEGER NOT NULL UNIQUE,
+    "name"	TEXT,
+    "price"	REAL,
+    PRIMARY KEY("id" AUTOINCREMENT)
 );''')
 
 ## Create items treeview ##
@@ -247,6 +247,21 @@ root.bind("<Control-Key-q>", lambda event: root.quit())
 ## Open pre prented window with final totals ##
 def open_prePrinted_window():
     prePrinted_window = Toplevel(root)
+    prePrinted_window.geometry("600x600")
+
+    ## Create prePrinted treeView ##
+    prePrinted_treeView = my_tree(prePrinted_window)
+    prePrinted_treeView['columns'] = ("Name", "Price", "Amount", "Total")
+    prePrinted_treeView.Make_heading_columns("Name 120", "Price 80", "Amount 80", "Total 80")
+    prePrinted_treeView.pack(fill=X)
+
+    prePrinted_treeView.tag_configure('prePrinted', background='#FE9E76')
+
+    ## Add Date From seleted treeView ##
+    for child in selected_tree.get_children():
+        values = selected_tree.item(child, 'values')
+        prePrinted_treeView.insert(parent='', index='end', iid=child, values=values, tags=('prePrinted', ))
+
 
 ## Bind Ctrl-P to open pre-print window ##
 root.bind("<Control-Key-p>", lambda event: open_prePrinted_window())
