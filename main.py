@@ -5,6 +5,7 @@ from tkinter import ttk
 import sqlite3
 from docxtpl import DocxTemplate
 import datetime  
+import os, sys, win32print, win32api 
 
 class my_tree(ttk.Treeview):
     tree_frame = None
@@ -48,6 +49,11 @@ root.config(menu=main_menu)
 ## Create items menu ##
 item_menu = Menu(main_menu, tearoff=0)
 main_menu.add_cascade(menu=item_menu, label="Items")
+
+## Create Bill menu ##
+bill_menu = Menu(main_menu, tearoff=0)
+main_menu.add_cascade(menu=bill_menu, label="Bill")
+
 
 ## connect to the data base ##
 class dataBase:
@@ -154,7 +160,7 @@ def add_item(name, price):
     return
 
 ## Create add item command to Items Menu ##
-item_menu.add_command(label="Add Item...", command=open_add_item_window)
+item_menu.add_command(label="Add Item...(Ctrl-n)", command=open_add_item_window)
 
 ## add selected item to the selected treeView ##
 def add_selected_item(event):
@@ -240,11 +246,16 @@ def end_program():
         root.quit()
 
 ## Handel root window close and create Messagebox ##
-#root.protocol("WM_DELETE_WINDOW", end_program)
+root.protocol("WM_DELETE_WINDOW", end_program)
 ## fast Quit the program with Ctrl-Q without asking ##
 root.bind("<Control-Key-q>", lambda event: root.quit())
 
-## print the bill ##
+## Create real print file function ##
+def print_file(file_to_print):
+    if file_to_print:
+        win32api.ShellExecute(0, "print", file_to_print, None, ".", 0)
+
+## generate the bill docx ##
 def generate_docx(window, disEntry, sub_total):
     ## Calculate Current Time and Date ##
     current_time = str(datetime.datetime.now())
@@ -278,12 +289,18 @@ def generate_docx(window, disEntry, sub_total):
     except:
         messagebox.showerror("Bill Template", "The program failed to open Bill template")
         
+    ## print the docx file ##
+    print_file(file_name + ".docx")
+
     window.destroy()
+
 
 ## Open pre prented window with final totals ##
 def open_prePrinted_window():
-    prePrinted_window = Toplevel(root)
-    prePrinted_window.geometry("600x600")
+    bottom_color = "#FFF851"
+
+    prePrinted_window = Toplevel(root, bg=bottom_color)
+    prePrinted_window.geometry("600x620")
 
     ## Create prePrinted treeView ##
     prePrinted_treeView = my_tree(prePrinted_window)
@@ -302,8 +319,6 @@ def open_prePrinted_window():
         total += float(values[-1])
 
     total = ('%f' % total).rstrip('0').rstrip('.')
-    
-    bottom_color = "#FFF851"
 
     total_frame = Frame(prePrinted_window, bg=bottom_color)
     total_frame.pack(fill=BOTH, expand=True)
@@ -331,12 +346,20 @@ def open_prePrinted_window():
 
     prePrinted_window.bind("<Return>", lambda event: submit_button.invoke())
 
+    ## Get Default printer name ##
+    printer_name = win32print.GetDefaultPrinter()
+    Label(prePrinted_window, text="Default Printer:  " + printer_name, bg=bottom_color,
+             anchor=W).pack(side=BOTTOM, fill=X)
 
-## Create print bill command to Items menue ##
-item_menu.add_command(label="Print Bill", command=open_prePrinted_window)
+
+## Create print bill command to Bill menue ##
+bill_menu.add_command(label="Print Bill (Ctrl-P)", command=open_prePrinted_window)
 
 ## Bind Ctrl-P to open pre-print window ##
 root.bind("<Control-Key-p>", lambda event: open_prePrinted_window())
+
+## Bind Ctrl-N to Add item ##
+root.bind("<Control-Key-n>", lambda event: open_add_item_window())
 
 ## Create Quit command to items menu ##
 item_menu.add_separator()
