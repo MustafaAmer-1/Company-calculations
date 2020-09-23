@@ -5,6 +5,19 @@ from tkinter import ttk
 import sqlite3
 
 class my_tree(ttk.Treeview):
+	tree_frame = None
+	def __init__(self, master, **kwargs):
+		self.tree_frame = Frame(master)
+		self.tree_frame.pack(side=TOP, expand = True, fill = BOTH)
+
+		self.tree_scroll = Scrollbar(self.tree_frame)
+		self.tree_scroll.pack(side=RIGHT, fill=Y)
+
+		super(my_tree, self).__init__(self.tree_frame,
+					yscrollcommand=self.tree_scroll.set , **kwargs)
+
+		self.tree_scroll.config(command=self.yview)
+
 	def Make_heading_columns(self, *args):
 		self.column("#0", width=0, stretch=NO)
 		self.heading("#0", text="", anchor=W)
@@ -12,7 +25,6 @@ class my_tree(ttk.Treeview):
 		for ar in args:
 			name = ar.split()[0]
 			width=int(ar.split()[1])
-
 			self.column(name, width=width, anchor=W)
 			self.heading(name, text=name, anchor=W)
 
@@ -58,37 +70,17 @@ cur.execute('''CREATE TABLE IF NOT EXISTS "items" (
 	PRIMARY KEY("id" AUTOINCREMENT)
 );''')
 
-## Create items treeView Frame ##
-tree_frame = Frame(root)
-tree_frame.pack(side=TOP, expand = True, fill = BOTH)
-
-## Create selected items TreeView Frame ##
-selected_frame = Frame(root)
-selected_frame.pack(side=BOTTOM, expand = True, fill = BOTH)
-
-## Create items Treeview ScrollBar ##
-tree_scroll = Scrollbar(tree_frame)
-tree_scroll.pack(side=RIGHT, fill=Y)
-
-## Create selected items Treeview ScrollBar ##
-selected_scroll = Scrollbar(selected_frame)
-selected_scroll.pack(side=RIGHT, fill=Y)
-
 ## Create items treeview ##
-items_tree = my_tree(tree_frame, yscrollcommand=tree_scroll.set)
+items_tree = my_tree(root)
 
 ## Create selected items treeview ##
-selected_tree = my_tree(selected_frame, yscrollcommand=selected_scroll.set)
+selected_tree = my_tree(root)
 
 ## Pack the items treeview to the window ##
 items_tree.pack(fill=X)
 
 ## Pack the selected items treeview to the window ##
 selected_tree.pack(fill=X)
-
-## Configure ScrollBar ##
-tree_scroll.config(command=items_tree.yview)
-selected_scroll.config(command=selected_tree.yview)
 
 ## define the columns ##
 items_tree['columns'] = ("ID", "Name", "Price")
@@ -196,7 +188,7 @@ def edit_the_amount(event):
         selected_num = num
 
         global amount_view
-        amount_view = Toplevel(selected_frame)
+        amount_view = Toplevel(selected_tree.tree_frame)
         amount_view.title("Amount of " + selected_name)
         Label(amount_view, text="Amount of " + selected_name).grid(padx=10, pady=20, row=0, column=0)
         global e
