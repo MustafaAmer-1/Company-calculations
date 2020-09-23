@@ -303,14 +303,16 @@ def open_prePrinted_window():
 
     total = ('%f' % total).rstrip('0').rstrip('.')
     
-    total_frame = Frame(prePrinted_window, bg="#B9789F")
+    bottom_color = "#FFF851"
+
+    total_frame = Frame(prePrinted_window, bg=bottom_color)
     total_frame.pack(fill=BOTH, expand=True)
-    Label(total_frame, text=" Total: ", font=("Helvetica", 13), bg="#B9789F").pack(side=LEFT)
+    Label(total_frame, text=" Total: ", font=("Helvetica", 13), bg=bottom_color).pack(side=LEFT)
     #.place(x=60, y=35, anchor="center")
-    Label(total_frame, text=total, font=("Helvetica", 13), bg="#B9789F").pack(side=LEFT)
+    Label(total_frame, text=total, font=("Helvetica", 13), bg=bottom_color).pack(side=LEFT)
     #.place(x=120, y=35, anchor="center")
 
-    Label(total_frame, text="  ", font=("Helvetica", 13), bg="#B9789F").pack(side=RIGHT)
+    Label(total_frame, text="  ", font=("Helvetica", 13), bg=bottom_color).pack(side=RIGHT)
     
     final_total_entry = Entry(total_frame, font=("Helvetica", 13), width=10, borderwidth=2)
     final_total_entry.insert(0, total)
@@ -318,9 +320,9 @@ def open_prePrinted_window():
     final_total_entry.focus_set()
     final_total_entry.selection_range(0, END)
 
-    Label(total_frame, text="After Discount: ", font=("Helvetica", 13), bg="#B9789F").pack(side=RIGHT)
+    Label(total_frame, text="After Discount: ", font=("Helvetica", 13), bg=bottom_color).pack(side=RIGHT)
 
-    button_frame = Frame(prePrinted_window, bg="#B9789F")
+    button_frame = Frame(prePrinted_window, bg=bottom_color)
     button_frame.pack(fill=BOTH, expand=True)
 
     submit_button = Button(button_frame, text="SUBMIT!", command=lambda: 
