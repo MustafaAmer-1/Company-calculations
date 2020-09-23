@@ -3,6 +3,8 @@ from tkinter import messagebox
 from tkinter import filedialog
 from tkinter import ttk
 import sqlite3
+from docxtpl import DocxTemplate
+import datetime  
 
 class my_tree(ttk.Treeview):
     tree_frame = None
@@ -243,7 +245,39 @@ def end_program():
 root.bind("<Control-Key-q>", lambda event: root.quit())
 
 ## print the bill ##
-def print_bill(window):
+def generate_docx(window, disEntry, sub_total):
+    ## Calculate Current Time and Date ##
+    current_time = str(datetime.datetime.now())
+    current_time = current_time[:current_time.index(".")]
+    file_name = current_time.replace(":", "-")
+
+    ## open Bill Template ##
+    try:
+        tpl = DocxTemplate('InvoiceTemplate.docx')
+
+        ## Create tmp Contex ##
+        context = {}
+        context["subtotal"] = str(sub_total)
+        context["total"] = disEntry.get()
+        context["tbl_contents"] = []
+
+        childeren = selected_tree.get_children()
+        for child in childeren:
+            values = selected_tree.item(child, 'values')
+            
+            context["tbl_contents"].append({
+                "label": values[0],
+                "cols": list(values[1:])
+            })
+
+        ## Render the Contex ##
+        tpl.render(context)
+        tpl.save(file_name + ".docx")
+
+    ## Handle Any Error During opening and rendering and saving file ##
+    except:
+        messagebox.showerror("Bill Template", "The program failed to open Bill template")
+        
     window.destroy()
 
 ## Open pre prented window with final totals ##
@@ -261,10 +295,12 @@ def open_prePrinted_window():
 
     ## Add Date From seleted treeView ##
     total = 0
-    for child in selected_tree.get_children():
+    childeren = selected_tree.get_children()
+    for child in childeren:
         values = selected_tree.item(child, 'values')
         prePrinted_treeView.insert(parent='', index='end', iid=child, values=values, tags=('prePrinted', ))
         total += float(values[-1])
+
     total = ('%f' % total).rstrip('0').rstrip('.')
     
     total_frame = Frame(prePrinted_window, bg="#B9789F")
@@ -287,7 +323,8 @@ def open_prePrinted_window():
     button_frame = Frame(prePrinted_window, bg="#B9789F")
     button_frame.pack(fill=BOTH, expand=True)
 
-    submit_button = Button(button_frame, text="SUBMIT!", command=lambda: print_bill(prePrinted_window), padx=50)
+    submit_button = Button(button_frame, text="SUBMIT!", command=lambda: 
+                                            generate_docx(prePrinted_window, final_total_entry, total), padx=50)
     submit_button.pack()
 
     prePrinted_window.bind("<Return>", lambda event: submit_button.invoke())
