@@ -131,12 +131,12 @@ def open_add_item_window():
     Label(add_item_window, text="Item Name", padx=10, pady=10).grid(row=0, column=0, sticky=E)
     
     name_entry = Entry(add_item_window, borderwidth=5)
-    name_entry.grid(row=0, column=1)
+    name_entry.grid(row=0, column=1, padx=10)
     
     Label(add_item_window, text="Item Price", padx=10, pady=10).grid(row=1, column=0, sticky=E)
     
     price_entry = Entry(add_item_window, borderwidth=5)
-    price_entry.grid(row=1, column=1)
+    price_entry.grid(row=1, column=1, pady=10)
 
     add_button = Button(add_item_window, text="ADD", padx=10, pady=10
                             , borderwidth=5, bg="#70E852", command=lambda : add_item(name_entry.get(), price_entry.get()))
@@ -264,22 +264,28 @@ def generate_docx(window, disEntry, sub_total):
 
     ## open Bill Template ##
     try:
-        tpl = DocxTemplate('InvoiceTemplate.docx')
+        tpl = DocxTemplate('Fatora.docx')
 
         ## Create tmp Contex ##
         context = {}
-        context["subtotal"] = str(sub_total)
+
         context["total"] = disEntry.get()
         context["tbl_contents"] = []
+
+        total_quantity = 0
 
         childeren = selected_tree.get_children()
         for child in childeren:
             values = selected_tree.item(child, 'values')
-            
+            r_values = list(values[:3])
+            r_values.reverse()
             context["tbl_contents"].append({
-                "label": values[0],
-                "cols": list(values[1:])
+                "label": values[3],
+                "cols": r_values
             })
+            total_quantity += int(values[2])
+
+        context['quantity'] = total_quantity
 
         ## Render the Contex ##
         tpl.render(context)
