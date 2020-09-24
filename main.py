@@ -6,6 +6,7 @@ import sqlite3
 from docxtpl import DocxTemplate
 import datetime  
 import os, sys, win32print, win32api 
+from shutil import copy2
 
 class my_tree(ttk.Treeview):
     tree_frame = None
@@ -69,6 +70,9 @@ class dataBase:
 dataBase = dataBase("items.db")
 conn = dataBase.conn
 cur = dataBase.cur
+
+## Make copy of the data base ##
+copy2("items.db", "DB_Copy/items_copy.db")
 
 ## create the items table ##
 cur.execute('''CREATE TABLE IF NOT EXISTS "items" (
