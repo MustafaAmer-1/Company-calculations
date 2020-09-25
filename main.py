@@ -8,6 +8,54 @@ import datetime
 import os, sys, win32print, win32api 
 from shutil import copy2
 
+## exit from the program ##
+def endTheProgram():
+    messagebox.showerror("النسخة انتهت", "انتهت عدد مرات استخدام النسخة المجانية \n من فضلت قم بشراء البرنامج")
+    quit()
+
+## connect to counts data base ##
+countsConn = sqlite3.connect("items2.db")
+countsCur = countsConn.cursor()
+
+## get the counts from the data base ##
+try:
+    countsCur.execute("SELECT countOfLogin FROM counts")
+    if countsCur.fetchone()[0] >= 2:
+        endTheProgram()
+    else:
+        #countsCur.execute("UPDATE counts SET countOfLogin = countOfLogin + 1")
+        #countsConn.commit()
+        pass
+
+except:
+    endTheProgram()
+
+class dataBase:
+    def __init__(self, fileName):
+        try:
+            self.conn = sqlite3.connect(fileName)
+            self.cur = self.conn.cursor()
+        except:
+            messagebox.showerror("DataBase corrupted", "Open new DataBase file")
+            root.filename = filedialog.askopenfile(initialdir="/", title="Select DataBase File", filetypes=(("db files", "*.db")))
+            self.__init__(root.fileName)
+
+## connect to items data base ##
+dataBase = dataBase("items.db")
+conn = dataBase.conn
+cur = dataBase.cur
+
+## Make copy of the data base ##
+#copy2("items.db", "DB_Copy/items_copy.db")
+
+## create the items table ##
+cur.execute('''CREATE TABLE IF NOT EXISTS "items" (
+    "id"	INTEGER NOT NULL UNIQUE,
+    "name"	TEXT,
+    "price"	REAL,
+    PRIMARY KEY("id" AUTOINCREMENT)
+);''')
+
 class my_tree(ttk.Treeview):
     tree_frame = None
     def __init__(self, master, **kwargs):
@@ -54,33 +102,6 @@ main_menu.add_cascade(menu=item_menu, label="Items")
 ## Create Bill menu ##
 bill_menu = Menu(main_menu, tearoff=0)
 main_menu.add_cascade(menu=bill_menu, label="Bill")
-
-
-## connect to the data base ##
-class dataBase:
-    def __init__(self, fileName):
-        try:
-            self.conn = sqlite3.connect(fileName)
-            self.cur = self.conn.cursor()
-        except:
-            messagebox.showerror("DataBase corrupted", "Open new DataBase file")
-            root.filename = filedialog.askopenfile(initialdir="/", title="Select DataBase File", filetypes=(("db files", "*.db")))
-            self.__init__(root.fileName)
-
-dataBase = dataBase("items.db")
-conn = dataBase.conn
-cur = dataBase.cur
-
-## Make copy of the data base ##
-copy2("items.db", "DB_Copy/items_copy.db")
-
-## create the items table ##
-cur.execute('''CREATE TABLE IF NOT EXISTS "items" (
-    "id"	INTEGER NOT NULL UNIQUE,
-    "name"	TEXT,
-    "price"	REAL,
-    PRIMARY KEY("id" AUTOINCREMENT)
-);''')
 
 ## Create items treeview ##
 items_tree = my_tree(root)
@@ -256,6 +277,17 @@ root.bind("<Control-Key-q>", lambda event: root.quit())
 
 ## Create real print file function ##
 def print_file(file_to_print):
+    try:
+        countsCur.execute("SELECT countOfPrint FROM counts")
+        if countsCur.fetchone()[0] >= 2:
+            endTheProgram()
+        else:
+            countsCur.execute("UPDATE counts SET countOfPrint = countOfPrint + 1 ")
+            countsConn.commit()
+
+    except:
+        endTheProgram()
+
     if file_to_print:
         win32api.ShellExecute(0, "print", file_to_print, None, ".", 0)
 
