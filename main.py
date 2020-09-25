@@ -205,7 +205,13 @@ def add_item(name_entry, price_entry, code_entry):
     else:
         items_tree.insert(parent='', index='end', iid=int(last_id), values=(price, name, code), tags=('oddRow', ))
     conn.commit()
-    add_item_window.destroy()
+    ## Delete the entries ##
+    name_entry.delete(0, END)
+    price_entry.delete(0, END)
+    code_entry.delete(0,END)
+    code_entry.focus_set()
+
+    #add_item_window.destroy()
     return
 
 ## Create add item command to Items Menu ##
@@ -345,7 +351,7 @@ def generate_docx(window, disEntry, sub_total):
         messagebox.showerror("Bill Template", "The program failed to open Bill template")
         
     ## print the docx file ##
-    #print_file(file_name + ".docx")
+    print_file(file_name + ".docx")
 
     window.destroy()
 
@@ -409,17 +415,31 @@ def open_prePrinted_window():
     Label(prePrinted_window, text="Default Printer:  " + printer_name, bg=bottom_color,
              anchor=W).pack(side=BOTTOM, fill=X)
 
+## Delete real item ##
+def delete_real_item():
+    answer = messagebox.askyesno("حذف عنصر", "هل تريد حذف العناصر المحددة؟")
+    if answer:
+        selection = items_tree.selection()
+        for item in selection:
+            items_tree.delete(item)
+            cur.execute("DELETE FROM items where id = ?", (item, ))
+            conn.commit()
 
 ## Create print bill command to Bill menue ##
 bill_menu.add_command(label="اطبع الفاتورة .. (Ctrl-P)", command=open_prePrinted_window)
 
 ## Bind Ctrl-P to open pre-print window ##
+root.bind("<Control-Key-P>", lambda event: open_prePrinted_window())
 root.bind("<Control-Key-p>", lambda event: open_prePrinted_window())
 #root.bind("<Control-Key-ح>", lambda event: open_prePrinted_window())
 
 ## Bind Ctrl-N to Add item ##
+root.bind("<Control-Key-N>", lambda event: open_add_item_window())
 root.bind("<Control-Key-n>", lambda event: open_add_item_window())
 #root.bind("<Control-Key-ى>", lambda event: open_add_item_window())
+
+## Bind Ctrl-del to delete items ##
+root.bind("<Control-Key-Delete>", lambda event: delete_real_item())
 
 ## Create Quit command to items menu ##
 item_menu.add_separator()
