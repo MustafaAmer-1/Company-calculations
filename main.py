@@ -6,7 +6,7 @@ import sqlite3
 from docxtpl import DocxTemplate
 import datetime  
 import os, sys, win32print, win32api 
-from shutil import copy2
+from shutil import copy2, move
 
 ## exit from the program ##
 def endTheProgram():
@@ -20,7 +20,7 @@ countsCur = countsConn.cursor()
 ## get the counts from the data base ##
 try:
     countsCur.execute("SELECT countOfLogin FROM counts")
-    if countsCur.fetchone()[0] >= 2:
+    if countsCur.fetchone()[0] > 2:
         endTheProgram()
     else:
         #countsCur.execute("UPDATE counts SET countOfLogin = countOfLogin + 1")
@@ -303,16 +303,16 @@ root.bind("<Control-Key-q>", lambda event: root.quit())
 ## Create real print file function ##
 def print_file(file_to_print):
     countsCur.execute("SELECT countOfPrint FROM counts")
-    if countsCur.fetchone()[0] >= 2:
+    if countsCur.fetchone()[0] > 2:
         endTheProgram()
     else:
-        #countsCur.execute("UPDATE counts SET countOfPrint = countOfPrint + 1 ")
+        countsCur.execute("UPDATE counts SET countOfPrint = countOfPrint + 1 ")
         if file_to_print:
             win32api.ShellExecute(0, "print", file_to_print, None, ".", 0)
-            #countsConn.commit()
+            countsConn.commit()
 
 ## generate the bill docx ##
-def generate_docx(window, disEntry, sub_total):
+def generate_docx(window, disEntry, office_name_entry):
     ## Calculate Current Time and Date ##
     current_time = str(datetime.datetime.now())
     current_time = current_time[:current_time.index(".")]
@@ -326,6 +326,12 @@ def generate_docx(window, disEntry, sub_total):
         context = {}
 
         context["total"] = disEntry.get()
+        context["tbl_headers"] = [
+            {
+                "office":office_name_entry.get(),
+                "date": str(datetime.datetime.now().date()) 
+                }
+        ]
         context["tbl_contents"] = []
 
         total_quantity = 0
@@ -338,13 +344,14 @@ def generate_docx(window, disEntry, sub_total):
                 'label' : values[3],
                 "cols": values[:3]
             })
+
             total_quantity += int(values[1])
 
         context['quantity'] = total_quantity
 
         ## Render the Contex ##
         tpl.render(context)
-        tpl.save("OutBills/" + file_name + ".docx")
+        tpl.save(file_name + ".docx")
 
     ## Handle Any Error During opening and rendering and saving file ##
     except:
@@ -361,7 +368,7 @@ def open_prePrinted_window():
     bottom_color = "#FFF851"
 
     prePrinted_window = Toplevel(root, bg=bottom_color)
-    prePrinted_window.geometry("600x620")
+    prePrinted_window.geometry("600x700")
 
     ## Create prePrinted treeView ##
     prePrinted_treeView = my_tree(prePrinted_window)
@@ -400,13 +407,17 @@ def open_prePrinted_window():
 
     Label(total_frame, text="    بعد الخصم", font=("Helvetica", 13), bg=bottom_color).pack(side=LEFT)
 
+    ## office name ##
+    Label(total_frame, text="   اسم المكتب", font=("Helvetica", 13), bg=bottom_color).place(x=145, y=70)
+    office_name_entry = Entry(total_frame, font=("Helvetica", 13), width=10, borderwidth=2)
+    office_name_entry.place(x = 18, y = 70)
 
     button_frame = Frame(prePrinted_window, bg=bottom_color)
-    button_frame.pack(fill=BOTH, expand=True)
+    button_frame.pack(fill=X)
 
     submit_button = Button(button_frame, text="اطبع الفاتورة", command=lambda: 
-                                            generate_docx(prePrinted_window, final_total_entry, total), padx=50)
-    submit_button.pack()
+                                            generate_docx(prePrinted_window, final_total_entry, office_name_entry), padx=50)
+    submit_button.pack(side=BOTTOM)
 
     prePrinted_window.bind("<Return>", lambda event: submit_button.invoke())
 
