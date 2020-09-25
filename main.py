@@ -164,7 +164,7 @@ def open_add_item_window():
     price_entry.grid(row=1, column=1, pady=10)
 
     add_button = Button(add_item_window, text="ADD", padx=10, pady=10
-                            , borderwidth=5, bg="#70E852", command=lambda : add_item(name_entry.get(), price_entry.get()))
+                            , borderwidth=5, bg="#70E852", command=lambda : add_item(name_entry, price_entry))
     add_button.grid(row=2, columnspan=2, sticky="nsew")
 
     name_entry.focus_set()
@@ -173,7 +173,16 @@ def open_add_item_window():
     return
 
 ## Add item to the DataBase and items TreeView ##
-def add_item(name, price):
+def add_item(name_entry, price_entry):
+    name = name_entry.get()
+    price = price_entry.get()
+    try:
+        price = float(price)
+    except:
+        messagebox.showerror("Non Falid Price", "Please Enter Real Number in the price")
+        price_entry.focus_set()
+        return
+
     cur.execute("INSERT INTO items (name, price) VALUES (?, ?)", (name, price))
     last_id = cur.lastrowid
     if last_id % 2 == 0:
