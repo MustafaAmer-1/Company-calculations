@@ -92,6 +92,14 @@ root.bind("<Escape>", lambda event: root.attributes("-fullscreen", False))
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
 
+## Create SearchBar ##
+search_entry = Entry(root, borderwidth=2, width=50)
+search_entry.pack(side=TOP)
+search_entry.insert(0, "Search")
+search_entry.selection_range(0, END)
+search_entry.focus_set()
+search_entry.bind("<Return>", lambda event: select_searched_item(search_entry))
+
 ## Create Main Menu ##
 main_menu = Menu(root)
 root.config(menu=main_menu)
@@ -436,6 +444,17 @@ def delete_real_item():
             cur.execute("DELETE FROM items where id = ?", (item, ))
             conn.commit()
 
+def select_searched_item(search_entry):
+    text = search_entry.get()
+    childeren = items_tree.get_children()
+    for child in childeren:
+        items_tree.selection_remove(child)
+    for child in childeren:
+        if text in items_tree.item(child, "values")[2]:
+            items_tree.selection_add(child)
+    items_tree.see(items_tree.selection()[0])
+    search_entry.delete(0, END)
+    
 ## Create print bill command to Bill menue ##
 bill_menu.add_command(label="اطبع الفاتورة .. (Ctrl-P)", command=open_prePrinted_window)
 
