@@ -23,8 +23,8 @@ try:
     if countsCur.fetchone()[0] > 2:
         endTheProgram()
     else:
-        #countsCur.execute("UPDATE counts SET countOfLogin = countOfLogin + 1")
-        #countsConn.commit()
+        countsCur.execute("UPDATE counts SET countOfLogin = countOfLogin + 1")
+        countsConn.commit()
         pass
 
 except:
@@ -54,6 +54,13 @@ cur.execute('''CREATE TABLE IF NOT EXISTS "items" (
     "name"	TEXT,
     "price"	REAL,
     "code" INTEGER NOT NULL,
+    PRIMARY KEY("id" AUTOINCREMENT)
+);''')
+
+## Create office names table ##
+cur.execute('''CREATE TABLE IF NOT EXISTS "office_names"(
+    "id"	INTEGER NOT NULL UNIQUE,
+    "name" TEXT,
     PRIMARY KEY("id" AUTOINCREMENT)
 );''')
 
@@ -317,10 +324,16 @@ def print_file(file_to_print):
         countsCur.execute("UPDATE counts SET countOfPrint = countOfPrint + 1 ")
         if file_to_print:
             win32api.ShellExecute(0, "print", file_to_print, None, ".", 0)
+            win32api.ShellExecute(0, "print", file_to_print, None, ".", 0)
             countsConn.commit()
 
 ## generate the bill docx ##
-def generate_docx(window, disEntry, office_name_entry):
+def generate_docx(window, disEntry, office_compo):
+    ## Add entered office name to data base ##
+    if office_compo.current() == -1:
+        cur.execute("INSERT INTO office_names (name) VALUES (?)", (office_compo.get(),))
+        conn.commit()
+
     ## Calculate Current Time and Date ##
     current_time = str(datetime.datetime.now())
     current_time = current_time[:current_time.index(".")]
@@ -336,7 +349,7 @@ def generate_docx(window, disEntry, office_name_entry):
         context["total"] = disEntry.get()
         context["tbl_headers"] = [
             {
-                "office":office_name_entry.get(),
+                "office":office_compo.get(),
                 "date": str(datetime.datetime.now().date()) 
                 }
         ]
@@ -417,14 +430,19 @@ def open_prePrinted_window():
 
     ## office name ##
     Label(total_frame, text="   اسم المكتب", font=("Helvetica", 13), bg=bottom_color).place(x=145, y=70)
-    office_name_entry = Entry(total_frame, font=("Helvetica", 13), width=10, borderwidth=2)
-    office_name_entry.place(x = 18, y = 70)
+    #office_name_entry = Entry(total_frame, font=("Helvetica", 13), width=10, borderwidth=2)
+    #office_name_entry.place(x = 18, y = 70)
+    cur.execute("SELECT name FROM office_names")
+    office_values = list(map(lambda item: item[0], cur.fetchall()))
+    office_compo = ttk.Combobox(total_frame, width=15, values=office_values)
+    office_compo.place(x = 18, y = 70)
+    #office_compo.current(0)
 
     button_frame = Frame(prePrinted_window, bg=bottom_color)
     button_frame.pack(fill=X)
 
     submit_button = Button(button_frame, text="اطبع الفاتورة", command=lambda: 
-                                            generate_docx(prePrinted_window, final_total_entry, office_name_entry), padx=50)
+                                            generate_docx(prePrinted_window, final_total_entry, office_compo), padx=50)
     submit_button.pack(side=BOTTOM)
 
     prePrinted_window.bind("<Return>", lambda event: submit_button.invoke())
