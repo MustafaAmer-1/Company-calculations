@@ -7,28 +7,7 @@ from docxtpl import DocxTemplate
 import datetime  
 import os, sys, win32print, win32api 
 from shutil import copy2, move
-
-## exit from the program ##
-def endTheProgram():
-    messagebox.showerror("النسخة انتهت", "انتهت عدد مرات استخدام النسخة المجانية \n من فضلت قم بشراء البرنامج")
-    quit()
-
-## connect to counts data base ##
-countsConn = sqlite3.connect("Files/items2.db")
-countsCur = countsConn.cursor()
-
-## get the counts from the data base ##
-try:
-    countsCur.execute("SELECT countOfLogin FROM counts")
-    if countsCur.fetchone()[0] > 2:
-        endTheProgram()
-    else:
-        countsCur.execute("UPDATE counts SET countOfLogin = countOfLogin + 1")
-        countsConn.commit()
-        pass
-
-except:
-    endTheProgram()
+from time import sleep
 
 class dataBase:
     def __init__(self, fileName):
@@ -317,15 +296,10 @@ root.bind("<Control-Key-q>", lambda event: root.quit())
 
 ## Create real print file function ##
 def print_file(file_to_print):
-    countsCur.execute("SELECT countOfPrint FROM counts")
-    if countsCur.fetchone()[0] > 2:
-        endTheProgram()
-    else:
-        countsCur.execute("UPDATE counts SET countOfPrint = countOfPrint + 1 ")
-        if file_to_print:
-            win32api.ShellExecute(0, "print", file_to_print, None, ".", 0)
-            win32api.ShellExecute(0, "print", file_to_print, None, ".", 0)
-            countsConn.commit()
+    if file_to_print:
+        win32api.ShellExecute(0, "print", file_to_print, None, ".", 0)
+        sleep(3)
+        win32api.ShellExecute(0, "print", file_to_print, None, ".", 0)
 
 ## generate the bill docx ##
 def generate_docx(window, disEntry, office_compo):
